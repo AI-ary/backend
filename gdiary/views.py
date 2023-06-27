@@ -212,6 +212,19 @@ class DiaryViewset(viewsets.ModelViewSet):
             diaries = diaries.filter(diary_date=date)
         return diaries
 
+    def destroy(self, request, *args, **kwarg):
+        diary = self.get_object()   # 삭제할 개체
+        diary.is_deleted = True
+        diary.save() 
+
+        response_data = {
+            "message": "SUCCESS",
+            "result": "change is_deleted = True"
+        }
+        
+        return Response(response_data, status = status.HTTP_204_NO_CONTENT)
+
+
 # class ResultViewset(viewsets.ModelViewSet):
 #     queryset = Result.objects.all()
 #     serializer_class = ResultSerializer
