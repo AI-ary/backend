@@ -1,6 +1,6 @@
 # pull official base image
 # 우분투
-FROM python:3.8.5
+FROM python:3.10
 #FROM python:3.10-slim-bullseye
 USER root 
 # environment 환경변수 지정, 컨테이너 안에서 실행중일 때 사용가능
