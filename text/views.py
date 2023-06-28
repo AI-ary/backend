@@ -33,8 +33,11 @@ def get_keyword(request):
             print("    delay...    ")
             continue
         else :
-            for word in diary_keyword.get() :
-                keyword_model = Result(keyword=word, diary_date=diary_date, user_id=user_id)
+            # Delete the existing keywords for the given diary date and user ID
+            Result.objects.filter(diary_date = diary_date, user_id = user_id).delete()
+
+            for word in diary_keyword.get():
+                keyword_model = Result(keyword = word, diary_date = diary_date, user_id = user_id)
                 keyword_model.save()
                 print(word, diary_date, user_id)
 
