@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from rest_framework.filters import SearchFilter
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import authenticate
 from config.settings import *
@@ -188,6 +189,10 @@ class AuthAPIView(APIView):
 class DiaryViewset(viewsets.ModelViewSet):
     queryset = Diary.objects.all()
     serializer_class = DiarySerializer 
+
+    # search
+    filter_backends = [SearchFilter]
+    search_fields = ['title', 'contents']
     
     # manual parameter
     param_date = openapi.Parameter(
@@ -213,14 +218,17 @@ class DiaryViewset(viewsets.ModelViewSet):
     # 일기 리스트 조회 및 날짜 별 일기 조회
     def get_queryset(self):
         diaries = Diary.objects.filter(is_deleted = False)
-        
+
+        search_query = self.request.query_params.get('search', '')
         user_id = self.request.query_params.get('user_id', '')
         date = self.request.query_params.get('diary_date', '')
+
 
         # api/v1/diaries/?user_id=1&date=2023-01-26
         if date and user_id:
             diaries = diaries.filter(diary_date = date, user_id = user_id)
-        # api/v1/diaries/?user_id=1&
+    
+        # api/v1/diaries/?user_id=1
         if user_id:
             diaries = diaries.filter(user_id = user_id)
         return diaries
