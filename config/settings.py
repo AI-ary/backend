@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt', #jwt
     'corsheaders', # cors 오류 해결
     'storages', #storages
+    'django_filters', # django-filter
 ]
 
 #s3

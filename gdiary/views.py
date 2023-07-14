@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from rest_framework.filters import SearchFilter
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import authenticate
 from config.settings import *
@@ -188,6 +189,10 @@ class AuthAPIView(APIView):
 class DiaryViewset(viewsets.ModelViewSet):
     queryset = Diary.objects.all()
     serializer_class = DiarySerializer 
+
+    # search
+    filter_backends = [SearchFilter]
+    search_fields = ['title', 'contents']
     
     # manual parameter
     param_date = openapi.Parameter(
@@ -197,37 +202,43 @@ class DiaryViewset(viewsets.ModelViewSet):
         type=openapi.FORMAT_DATE
     )
 
+    param_user = openapi.Parameter(
+        'user_id',
+        openapi.IN_QUERY,
+        description='user_id',
+        type=openapi.TYPE_INTEGER
+    )
+
     # get_queryset에 데코레이터 인식 못하기 때문에 list 상속 받아 구현
-    @swagger_auto_schema(manual_parameters=[param_date])
+    @swagger_auto_schema(manual_parameters=[param_date, param_user])
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
 
-    # api/v1/diaries/?date=2023-01-26
+    # 일기 리스트 조회 및 날짜 별 일기 조회
     def get_queryset(self):
         diaries = Diary.objects.filter(is_deleted = False)
 
-        date = self.request.query_params.get('date', '')
-        if date:
-            diaries = diaries.filter(diary_date=date)
+        search_query = self.request.query_params.get('search', '')
+        user_id = self.request.query_params.get('user_id', '')
+        date = self.request.query_params.get('diary_date', '')
+
+
+        # api/v1/diaries/?user_id=1&date=2023-01-26
+        if date and user_id:
+            diaries = diaries.filter(diary_date = date, user_id = user_id)
+    
+        # api/v1/diaries/?user_id=1
+        if user_id:
+            diaries = diaries.filter(user_id = user_id)
         return diaries
 
     def destroy(self, request, *args, **kwarg):
         diary = self.get_object()   # 삭제할 개체
         diary.is_deleted = True
         diary.save() 
-
-        response_data = {
-            "message": "SUCCESS",
-            "result": "change is_deleted = True"
-        }
         
-        return Response(response_data, status = status.HTTP_204_NO_CONTENT)
-
-
-# class ResultViewset(viewsets.ModelViewSet):
-#     queryset = Result.objects.all()
-#     serializer_class = ResultSerializer
+        return Response(status = status.HTTP_204_NO_CONTENT)
 
 class KeywordViewset(viewsets.ModelViewSet):
     queryset = Keyword.objects.all()
