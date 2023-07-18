@@ -2,13 +2,7 @@ from django.db import models
 from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 
-class BaseModel(models.Model):
-    created_at = models.DateTimeField(auto_now_add=True, null=False)
-    updated_at = models.DateTimeField(auto_now=True, null=False)
-    is_deleted = models.BooleanField(default=False, null=False)
-
-    class Meta:
-        abstract=True # 이 모델은 데이터베이스 테이블을 만드는데 사용되지 않겠다.
+from config.base_model import BaseModel
 
 class UserManager(BaseUserManager):
     
